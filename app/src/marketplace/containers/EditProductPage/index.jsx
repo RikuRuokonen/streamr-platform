@@ -9,7 +9,6 @@ import { I18n } from 'react-redux-i18n'
 import type { StoreState } from '$shared/flowtype/store-state'
 import type { ProductId, EditProduct, SmartContractProduct, Product } from '../../flowtype/product-types'
 import type { Address } from '../../flowtype/web3-types'
-import type { PriceDialogProps } from '../../components/Modal/SetPriceDialog'
 import type { StreamList } from '$shared/flowtype/stream-types'
 import type { CategoryList, Category } from '../../flowtype/category-types'
 import type { OnUploadError } from '../../components/ImageUpload'
@@ -44,7 +43,7 @@ import {
 import { selectAccountId } from '../../modules/web3/selectors'
 import { selectAllCategories, selectFetchingCategories } from '../../modules/categories/selectors'
 import { selectUserData } from '$shared/modules/user/selectors'
-import { SET_PRICE, CONFIRM_NO_COVER_IMAGE, SAVE_PRODUCT } from '../../utils/modals'
+import { CONFIRM_NO_COVER_IMAGE, SAVE_PRODUCT } from '../../utils/modals'
 import { selectStreams as selectAvailableStreams } from '../../modules/streams/selectors'
 import {
     selectEditProduct,
@@ -86,7 +85,6 @@ export type DispatchProps = {
     getContractProduct: (id: ProductId) => void,
     confirmNoCoverImage: (Function) => void,
     setImageToUploadProp: (File) => void,
-    openPriceDialog: (PriceDialogProps) => void,
     onEditProp: (string, any) => void,
     initEditProductProp: () => void,
     getUserProductPermissions: (ProductId) => void,
@@ -261,7 +259,6 @@ export class EditProductPage extends Component<Props> {
             fetchingProduct,
             fetchingStreams,
             setImageToUploadProp,
-            openPriceDialog,
             onEditProp,
             ownerAddress,
             categories,
@@ -281,12 +278,6 @@ export class EditProductPage extends Component<Props> {
                     fetchingStreams={fetchingProduct || fetchingStreams}
                     toolbarActions={this.getToolBarActions()}
                     setImageToUpload={setImageToUploadProp}
-                    openPriceDialog={(props) => openPriceDialog({
-                        ...props,
-                        productId: editProduct.id,
-                        isFree: editProduct.isFree,
-                        requireOwnerIfDeployed: true,
-                    })}
                     onUploadError={onUploadError}
                     onEdit={onEditProp}
                     ownerAddress={ownerAddress}
@@ -344,9 +335,6 @@ export const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
     noHistoryRedirect: (...params) => dispatch(replace(formatPath(...params))),
     onPublish: () => dispatch(createProductAndRedirect((id) => formatPath(links.products, id, 'publish'))),
     onSaveAndExit: () => dispatch(createProductAndRedirect((id) => formatPath(links.products, id))),
-    openPriceDialog: (props: PriceDialogProps) => dispatch(showModal(SET_PRICE, {
-        ...props,
-    })),
     onReset: () => dispatch(resetEditProduct()),
 })
 
