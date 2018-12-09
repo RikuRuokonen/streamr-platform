@@ -14,6 +14,8 @@ import type { CategoryList, Category } from '../../flowtype/category-types'
 import type { OnUploadError } from '../../components/ImageUpload'
 import type { User } from '$shared/flowtype/user-types'
 
+import Modal from '$shared/components/Modal'
+import ConfirmNoCoverImageDialog from '$mp/components/Modal/ConfirmNoCoverImageDialog'
 import ProductPageEditorComponent from '../../components/ProductPageEditor'
 import Layout from '../../components/Layout'
 import links from '../../../links'
@@ -43,7 +45,7 @@ import {
 import { selectAccountId } from '../../modules/web3/selectors'
 import { selectAllCategories, selectFetchingCategories } from '../../modules/categories/selectors'
 import { selectUserData } from '$shared/modules/user/selectors'
-import { CONFIRM_NO_COVER_IMAGE, SAVE_PRODUCT } from '../../utils/modals'
+import { SAVE_PRODUCT } from '../../utils/modals'
 import { selectStreams as selectAvailableStreams } from '../../modules/streams/selectors'
 import {
     selectEditProduct,
@@ -83,7 +85,6 @@ export type StateProps = {
 export type DispatchProps = {
     getProductById: (ProductId) => void,
     getContractProduct: (id: ProductId) => void,
-    confirmNoCoverImage: (Function) => void,
     setImageToUploadProp: (File) => void,
     onEditProp: (string, any) => void,
     initEditProductProp: () => void,
@@ -103,7 +104,15 @@ export type DispatchProps = {
 
 type Props = OwnProps & StateProps & DispatchProps
 
-export class EditProductPage extends Component<Props> {
+type State = {
+    onConfirmNoCoverImage: ?() => void,
+}
+
+export class EditProductPage extends Component<Props, State> {
+    state = {
+        onConfirmNoCoverImage: null,
+    }
+
     componentDidMount() {
         const { match } = this.props
         this.props.onReset()
@@ -228,21 +237,31 @@ export class EditProductPage extends Component<Props> {
     }
 
     askConfirmIfNeeded = (action: Function) => {
-        const { confirmNoCoverImage, editProduct, imageUpload } = this.props
+        const { editProduct, imageUpload } = this.props
         if (editProduct && !editProduct.imageUrl && !imageUpload) {
-            return confirmNoCoverImage(action)
+            this.setState({
+                onConfirmNoCoverImage: action,
+            })
+        } else {
+            action()
         }
-        return action()
     }
 
     confirmCoverImageBeforeSaving = (nextAction: () => any) => {
         const { product, editProduct, showSaveDialog } = this.props
         if (product && editProduct && this.isEdit()) {
-            this.askConfirmIfNeeded(() =>
-                showSaveDialog(editProduct.id || '', nextAction, this.isWeb3Required()))
+            this.askConfirmIfNeeded(() => {
+                showSaveDialog(editProduct.id || '', nextAction, this.isWeb3Required())
+            })
         } else {
             this.askConfirmIfNeeded(nextAction)
         }
+    }
+
+    closeConfirmNoCoverImageDialog = () => {
+        this.setState({
+            onConfirmNoCoverImage: null,
+        })
     }
 
     render() {
@@ -261,6 +280,8 @@ export class EditProductPage extends Component<Props> {
             onUploadError,
         } = this.props
 
+        const { onConfirmNoCoverImage } = this.state
+
         return editProduct && (
             <Layout>
                 <ProductPageEditorComponent
@@ -278,6 +299,15 @@ export class EditProductPage extends Component<Props> {
                     ownerAddress={ownerAddress}
                     user={user}
                 />
+                {onConfirmNoCoverImage && (
+                    <Modal>
+                        <ConfirmNoCoverImageDialog
+                            onContinue={onConfirmNoCoverImage}
+                            closeOnContinue={false}
+                            onClose={this.closeConfirmNoCoverImageDialog}
+                        />
+                    </Modal>
+                )}
             </Layout>
         )
     }
@@ -305,10 +335,6 @@ export const mapStateToProps = (state: StoreState): StateProps => ({
 export const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
     getProductById: (id: ProductId) => dispatch(getProductById(id)),
     getContractProduct: (id: ProductId) => dispatch(getProductFromContract(id)),
-    confirmNoCoverImage: (onContinue: Function) => dispatch(showModal(CONFIRM_NO_COVER_IMAGE, {
-        onContinue,
-        closeOnContinue: false,
-    })),
     onUploadError: (errorMessage: string) => dispatch(showNotificationAction(errorMessage, notificationIcons.ERROR)),
     setImageToUploadProp: (image: File) => dispatch(setImageToUpload(image)),
     onEditProp: (field: string, value: any) => dispatch(updateEditProductField(field, value)),
