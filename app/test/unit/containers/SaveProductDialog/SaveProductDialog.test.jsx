@@ -8,7 +8,6 @@ import { saveProductSteps, transactionStates } from '$mp/utils/constants'
 import SaveProductDialogComponent from '$mp/components/Modal/SaveProductDialog'
 import SaveContractProductDialogComponent from '$mp/components/Modal/SaveContractProductDialog'
 import * as saveProductDialogActions from '$mp/modules/saveProductDialog/actions'
-import * as modalActions from '$mp/modules/modals/actions'
 
 describe('SaveProductDialog', () => {
     let wrapper
@@ -38,7 +37,7 @@ describe('SaveProductDialog', () => {
             updateTransactionState: null,
             resetSaveDialog: sandbox.spy(),
             saveProduct: sandbox.spy(),
-            onCancel: sandbox.spy(),
+            onClose: sandbox.spy(),
             redirect: sandbox.spy(),
 
         }
@@ -88,18 +87,15 @@ describe('SaveProductDialog', () => {
         const dispatchStub = sandbox.stub().callsFake((action) => action)
         const resetSaveDialogStub = sandbox.stub(saveProductDialogActions, 'resetSaveDialog')
         const saveProductStub = sandbox.stub(saveProductDialogActions, 'saveProduct')
-        const hideModalStub = sandbox.stub(modalActions, 'hideModal')
 
         const actions = mapDispatchToProps(dispatchStub, props)
 
         actions.resetSaveDialog()
         actions.saveProduct()
-        actions.onCancel()
 
-        expect(dispatchStub.callCount).toEqual(4)
-        expect(resetSaveDialogStub.calledTwice).toEqual(true)
+        expect(dispatchStub.callCount).toEqual(2)
+        expect(resetSaveDialogStub.calledOnce).toEqual(true)
         expect(saveProductStub.calledOnce).toEqual(true)
-        expect(hideModalStub.calledOnce).toEqual(true)
     })
 
     describe('render()', () => {

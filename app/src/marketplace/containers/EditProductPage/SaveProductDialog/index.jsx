@@ -8,7 +8,6 @@ import SaveContractProductDialogComponent from '$mp/components/Modal/SaveContrac
 import { selectTransactionState as selectUpdateTransactionState } from '$mp/modules/editProduct/selectors'
 import { selectUpdateProductTransaction, selectUpdateContractProductError } from '$mp/modules/updateContractProduct/selectors'
 import { saveProduct, resetSaveDialog } from '$mp/modules/saveProductDialog/actions'
-import { hideModal } from '$mp/modules/modals/actions'
 import { transactionStates, saveProductSteps } from '$mp/utils/constants'
 import type { StoreState, SaveProductStep } from '$mp/flowtype/store-state'
 import type { ProductId } from '$mp/flowtype/product-types'
@@ -29,12 +28,12 @@ type StateProps = {
 type DispatchProps = {
     resetSaveDialog: () => void,
     saveProduct: () => void, // eslint-disable-line react/no-unused-prop-types
-    onCancel: () => void,
 }
 
 type OwnProps = {
     redirect: (ProductId) => void, // eslint-disable-line react/no-unused-prop-types
     productId: ProductId,
+    onClose: () => void,
 }
 
 type Props = StateProps & DispatchProps & OwnProps
@@ -64,23 +63,23 @@ export class SaveProductDialog extends React.Component<Props> {
         }
     }
 
+    onClose = () => {
+        const { resetSaveDialog: resetDialog, onClose } = this.props
+        resetDialog()
+        onClose()
+    }
+
     redirectStarted: boolean
 
     render() {
-        const {
-            step,
-            contractUpdateError,
-            contractTransaction,
-            updateTransactionState,
-            onCancel,
-        } = this.props
+        const { step, contractUpdateError, contractTransaction, updateTransactionState } = this.props
 
         switch (step) {
             case saveProductSteps.STARTED: {
                 return (
                     <SaveProductDialogComponent
                         transactionState={transactionStates.STARTED}
-                        onClose={onCancel}
+                        onClose={this.onClose}
                     />
                 )
             }
@@ -89,7 +88,7 @@ export class SaveProductDialog extends React.Component<Props> {
                 return (
                     <SaveProductDialogComponent
                         transactionState={updateTransactionState}
-                        onClose={onCancel}
+                        onClose={this.onClose}
                     />
                 )
             }
@@ -108,7 +107,7 @@ export class SaveProductDialog extends React.Component<Props> {
                 return (
                     <SaveContractProductDialogComponent
                         transactionState={transactionState}
-                        onClose={onCancel}
+                        onClose={this.onClose}
                     />
                 )
             }
@@ -130,10 +129,6 @@ export const mapStateToProps = (state: StoreState): StateProps => ({
 export const mapDispatchToProps = (dispatch: Function): DispatchProps => ({
     resetSaveDialog: () => dispatch(resetSaveDialog()),
     saveProduct: () => dispatch(saveProduct()),
-    onCancel: () => {
-        dispatch(resetSaveDialog())
-        dispatch(hideModal())
-    },
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(withContractProduct(SaveProductDialog))
