@@ -2,11 +2,11 @@
 
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Row, Col, Container } from 'reactstrap'
-import { getMyStreamPermissions, getStream, openStream } from '$userpages/modules/userPageStreams/actions'
 
 import type { Stream, StreamId } from '$shared/flowtype/stream-types'
 import type { StoreState } from '$userpages/flowtype/states/store-state'
+import { getMyStreamPermissions, getStream, openStream } from '$userpages/modules/userPageStreams/actions'
+import TOCPage from '$userpages/components/TOCPage'
 
 import Layout from '../../Layout'
 import InfoView from './InfoView'
@@ -57,27 +57,38 @@ export class StreamShowView extends Component<Props> {
         return (
             <Layout>
                 <div className={styles.streamShowView}>
-                    <Container>
-                        <Row>
-                            <Col sm={12}>
-                                <InfoView />
-                            </Col>
-                            <Col sm={12}>
-                                <KeyView />
-                            </Col>
-                            <Col sm={12}>
-                                <FieldView />
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col sm={12}>
-                                <PreviewView />
-                            </Col>
-                            <Col sm={12}>
-                                <HistoryView />
-                            </Col>
-                        </Row>
-                    </Container>
+                    <TOCPage title="Set up your Stream">
+                        <TOCPage.Section
+                            id="details"
+                            title="Details"
+                        >
+                            <InfoView />
+                        </TOCPage.Section>
+                        <TOCPage.Section
+                            id="configure"
+                            title="Configure"
+                        >
+                            <FieldView />
+                        </TOCPage.Section>
+                        <TOCPage.Section
+                            id="preview"
+                            title="Preview"
+                        >
+                            <PreviewView />
+                        </TOCPage.Section>
+                        <TOCPage.Section
+                            id="api-access"
+                            title="API Access"
+                        >
+                            <KeyView />
+                        </TOCPage.Section>
+                        <TOCPage.Section
+                            id="historical-data"
+                            title="Historical Data"
+                        >
+                            <HistoryView />
+                        </TOCPage.Section>
+                    </TOCPage>
                 </div>
             </Layout>
         )
